@@ -85,7 +85,6 @@ if TESTDATA:
 # Plot the read time series
 plt.plot(time_series)
 plt.axvline(x=window, color="red", linestyle="dashed")
-plt.legend()
 plt.grid()
 my_title = f"Time Series from {filename} "
 if TESTDATA:
@@ -246,13 +245,23 @@ for nth in range(n_pred):
 	prediction_variance = torch.matmul(torch.matmul(x_star.T, i_A), x_star)
 	train_uncertainty[nth] = torch.sqrt(prediction_variance)
 
-# Now it is time to predict
 
 pred_train = logback(raw_train_predicted, starting_values_train, final_rescaler)
-up_pred_train = logback(raw_train_predicted + 3. * train_uncertainty,
+up_pred_train = logback(raw_train_predicted + 1.96 * train_uncertainty,
 				starting_values_train, final_rescaler)
-dw_pred_train = logback(raw_train_predicted - 3. * train_uncertainty,
+dw_pred_train = logback(raw_train_predicted - 1.96 * train_uncertainty,
 				starting_values_train, final_rescaler)
+
+# Percentage of difference between the predicted values and confidence int
+train_spread = torch.zeros(n_pred)
+for nth in range(n_pred):
+	delta_up = torch.abs(pred_train[nth] - up_pred_train[nth])
+	delta_dw = torch.abs(pred_train[nth] - dw_pred_train[nth])
+	delta = (delta_up + delta_dw) / 2.
+	train_spread[nth] = delta * 100. / pred_train[nth]
+mean_train_spread = torch.mean(train_spread)
+print(f"Mean train SPREAD: {mean_train_spread:.2f}%")
+
 
 train_acc = 0.
 for nth in range(n_pred):
@@ -276,10 +285,20 @@ for nth in range(n_pred):
 # Now it is time to predict
 
 pred_val = logback(raw_val_predicted, starting_values_val, final_rescaler)
-up_pred_val = logback(raw_val_predicted + 3. * val_uncertainty,
+up_pred_val = logback(raw_val_predicted + 1.96 * val_uncertainty,
 				starting_values_val, final_rescaler)
-dw_pred_val = logback(raw_val_predicted - 3. * val_uncertainty,
+dw_pred_val = logback(raw_val_predicted - 1.96 * val_uncertainty,
 				starting_values_val, final_rescaler)
+
+# Percentage of difference between the predicted values and confidence int
+val_spread = torch.zeros(n_pred)
+for nth in range(n_pred):
+	delta_up = torch.abs(pred_val[nth] - up_pred_val[nth])
+	delta_dw = torch.abs(pred_val[nth] - dw_pred_val[nth])
+	delta = (delta_up + delta_dw) / 2.
+	val_spread[nth] = delta * 100. / pred_val[nth]
+mean_val_spread = torch.mean(val_spread)
+print(f"Mean val SPREAD: {mean_val_spread:.2f}%")
 
 
 val_acc = 0.
@@ -299,11 +318,11 @@ lc_sig = my_signature(lc_augment.unsqueeze(0), depth = sig_depth)
 
 raw_next = torch.matmul(lc_sig, C)
 tmp = torch.matmul(lc_sig, i_A)
-uncertainty_next = torch.matmul(tmp, lc_sig.T)
+uncertainty_next = torch.sqrt(torch.matmul(tmp, lc_sig.T))
 
 next_pt = torch.exp(raw_next / final_rescaler) * last_chunk[0]
-up_pt = torch.exp((raw_next+3.*uncertainty_next) /final_rescaler)*last_chunk[0]
-dw_pt = torch.exp((raw_next-3.*uncertainty_next) /final_rescaler)*last_chunk[0]
+up_pt = torch.exp((raw_next+1.96*uncertainty_next) /final_rescaler)*last_chunk[0]
+dw_pt = torch.exp((raw_next-1.96*uncertainty_next) /final_rescaler)*last_chunk[0]
 
 
 ##############################################################################
@@ -314,13 +333,13 @@ dw_pt = torch.exp((raw_next-3.*uncertainty_next) /final_rescaler)*last_chunk[0]
 plt.axvline(x=window, color="red", linestyle="dashed")
 plt.plot(range(window, window + len_train), 
 	y_vanilla_train,
-	label="train: true", color="green")
+	label="train: true", color="blue")
 plt.plot(range(window, window + len_train), 
-	pred_train, label="train: pred", color="red")
+	pred_train, label="train: pred", color="orange")
 plt.plot(range(window, window + len_train), 
-	up_pred_train, color="red", linestyle="dotted")
+	up_pred_train, color="orange", linestyle="dotted")
 plt.plot(range(window, window + len_train), 
-	dw_pred_train, color="red", linestyle="dotted")
+	dw_pred_train, color="orange", linestyle="dotted")
 
 plt.axvline(x=window + len_train, color="grey", linestyle="dashed")
 
@@ -346,13 +365,18 @@ plt.scatter(len(time_series),next_pt, color = "blue", marker = "o")
 plt.scatter(len(time_series),up_pt, color = "blue", marker = "_")
 plt.scatter(len(time_series),dw_pt, color = "blue", marker = "_")
 
+x_label = f"Train: ACC {train_acc:.2f}% SPRD {mean_train_spread:.2f}% | "
+x_label = x_label + f"Val: ACC {val_acc:.2f}% SPRD {mean_val_spread:.2f}%"
+plt.xlabel(x_label)
 
 plt.axvline(x=window+len_train+2*offset, color="grey", linestyle="dashed")
 data_name = sys.argv[1].split("/")[1].split(".")[0]
 plt.grid()
 plt.legend()
 now = time_series[-1]
-plt.title(f"[{data_name} win {window}] CURR {now:.1f} NEXT [{up_pt:.1f},{dw_pt:.1f}]")
+my_title = f"[{data_name} win {window}] CURR {now:.1f} NEXT IN"
+my_title = my_title+f" [{up_pt:.1f},{dw_pt:.1f}] MODE {next_pt.item():.1f}"
+plt.title(my_title)
 plt.show()
 
 #####

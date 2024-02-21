@@ -1,0 +1,86 @@
+\documentclass[twocolumn,9pt]{article}
+%\documentclass[9pt]{article}
+%\documentclass[../main.tex]{subfiles}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{breqn}
+\usepackage{float}
+\usepackage{enumerate}
+\usepackage{comment}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\newcommand\norm[1]{\lVert#1\rVert}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{proposition}{Proposition}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+%\begin{figure}
+%\includegraphics[width=1.0\textwidth]{plt_introduction.pdf}
+%\caption{Two paths having small Euclidean distance, but big Signature
+%            difference}
+%\includegraphics[scale=0.5]{plt_introduction.pdf}
+%\centering
+%\end{figure}
+
+%\title{The Signature Transform for Time Series Classification (beta3)}
+\author {-}
+
+\begin{document}
+
+%\maketitle
+
+\begin{abstract}
+Use the signature to linearize the problem of time series prediction.
+Use the bayesian theory to solve the problem taking advantage of
+the linear formulation.
+\end{abstract}
+
+\begin{section}{The Linear Case}
+Suppose to have a dataset of points $\{X_i, y_i\}$ connected by a linear
+model perturbed by noise:
+\begin{equation}
+y_i = <L, X_i> + \eta
+\end{equation}
+for an appropriate array $L$, and $\eta$ Gaussian noise.
+The goal is to find a good value for $L$, such that it is able to reproduce
+all the data $y$ starting from $X$, for points in a training set,
+as well as to predict correctly on unseen data from a target 
+validation set.
+
+We follow the classic Bayesian approach, which puts probability distributions
+on $L$ insted of fixed, determined values.
+Start with a Gaussian $N(0, I)$ on $L$: observing the data modifies the
+distribution and allows to perform predictions in a probabilistic way.
+
+
+Since the model $L$ is linear, there are close formulaes for that!
+And, crucial: predictions will also follow a (dimensional)
+Gaussian distributions, meaning that every time we have either
+a mean (also more, i.e. most likely value) as well as 
+confidence intervals here computed as $1.96 \sigma$.
+
+\end{section}
+
+
+\begin{section}{Preprocessing Data}
+Giv
+
+\end{section}
+
+\begin{section}{The Linear Case}
+
+\end{section}
+
+
+
+%\bibliographystyle{alpha} % alternative is "plain" reference style
+%\bibliography{./references/thebibliography}
+\end{document}
