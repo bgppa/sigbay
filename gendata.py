@@ -386,7 +386,7 @@ if __name__ == "__main__":
 	
 ###	CRYPTOCURRENCIES
 #	crypto_day("ETH", "eth-days-600", 600)
-#	crypto_day("BTC", "btc-days-600", 600)
+	crypto_day("BTC", "btc-days-600", 600)
 
 ###	STOCKS from Yahoo Fiance, in dollars, American time zone
 #	La mattina in Europa ho il CLOSE americano del giorno prima
@@ -394,7 +394,7 @@ if __name__ == "__main__":
 #	yahoo_finance ("NTDOY", "nintendo-600d", "600d")
 #	yahoo_finance ("MSFT", "microsoft-600d", "600d")
 #	yahoo_finance ("NVDA", "nvidia-600d", "600d")
-	yahoo_finance ("PONGF", "atari-600d", "600d")
+#	yahoo_finance ("PONGF", "atari-600d", "600d")
 #	gaussian_walk(500, "gwalk-05-500", drift = 0.5)
 #	w2 = gaussian_walk(500, "gwalk-2-500", drift = 2)
 #	w03 = gaussian_walk(500, "gwalk-03-500", drift = 0.3)

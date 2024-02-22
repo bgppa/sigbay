@@ -28,6 +28,7 @@ IGNORE = 0
 GIVENAVG = 0	# True if the average path is provided (gbm/stoch proc case)
 DEBUG = 0
 RESCALER = 2.
+HYPARAMSEARCH = 1
 
 sig_depth = 3
 
@@ -92,7 +93,9 @@ if TESTDATA:
 else:
 	my_title = my_title + f"({n_times} nodes)"
 plt.title(my_title)
-plt.show()
+
+if HYPARAMSEARCH == 0:
+	plt.show()
 
 
 ###############################################################
@@ -147,7 +150,9 @@ x_aug = augment(x_logret.unsqueeze(2))
 mean_length = get_1var(x_aug).mean()
 print(f"Complete dataset of mean length {mean_length : .3f}")
 print(f"{truncation_err(sig_depth, mean_length):.2f}")
-input("OK?")
+
+if HYPARAMSEARCH == 0:
+	input("OK?")
 
 # Generating now the FULL dataset composed of signature elements
 x_sig = my_signature(x_aug, sig_depth)
@@ -202,15 +207,15 @@ plt.axvline(x=len_train+2*offset+window, color="grey", linestyle="dashed",
 plt.grid()
 plt.legend()
 plt.title(f"Showing training and validation y-data (win = {window})")
-plt.show()
+
+if HYPARAMSEARCH == 0:
+	plt.show()
 
 # Show some random signatures, just to check that the shapes are bounded
 selected_paths = torch.randint(n_samples, (4,))
-for nth in selected_paths:
-	plot_signature(x_sig[nth], 2, sig_depth)
-
-
-# DA QUI
+if HYPARAMSEARCH == 0:
+	for nth in selected_paths:
+		plot_signature(x_sig[nth], 2, sig_depth)
 
 ##############################################################
 ####	Here it comes the BAYESIAN APPROACH
@@ -231,8 +236,6 @@ y = y_train.reshape(n, 1)
 # Parameters for the Bayesian regression
 tmp1 = torch.matmul(i_A, X)
 C = torch.matmul(tmp1, y) / (sigma_noise ** 2)
-
-
 
 ########
 # Predict on TRAIN data
@@ -377,7 +380,17 @@ now = time_series[-1]
 my_title = f"[{data_name} win {window}] CURR {now:.1f} NEXT IN"
 my_title = my_title+f" [{up_pt:.1f},{dw_pt:.1f}] MODE {next_pt.item():.1f}"
 plt.title(my_title)
-plt.show()
 
+if HYPARAMSEARCH == 0:
+	plt.show()
+
+total_accuracy = (train_acc + val_acc) / 2.
+total_spread = (mean_train_spread + mean_val_spread) / 2.
+print(f"{data_name}|{window}|{total_accuracy:.2f}|{total_spread:.2f}")
+
+if HYPARAMSEARCH == 1:
+	f = open("hypermapameters.txt", "a")
+	f.write(f"{data_name}|{window}|{total_accuracy:.2f}|{total_spread:.2f}")
+	f.write("\n")
+	f.close()
 #####
-
