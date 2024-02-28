@@ -176,12 +176,11 @@ def gbm (n_times, mu, sigma, filename):
 #---
 
 
-def gaussian_walk(n_times, filename, drift = 0.):
+def gaussian_walk(n_times, filename, drift = 0., sigma = 1.):
 	'''
 	Simple simulation of a Gaussian random walk.
 	THIS IS A MARTINGALE
 	'''
-	sigma = 1.
 	results = torch.zeros(n_times)
 	for nth in range(n_times):
 		results[nth] = results[nth - 1]+torch.normal(drift, sigma,(1,))
@@ -386,7 +385,7 @@ if __name__ == "__main__":
 	
 ###	CRYPTOCURRENCIES
 #	crypto_day("ETH", "eth-days-600", 600)
-	crypto_day("BTC", "btc-days-600", 600)
+#	crypto_day("BTC", "btc-days-600", 600)
 
 ###	STOCKS from Yahoo Fiance, in dollars, American time zone
 #	La mattina in Europa ho il CLOSE americano del giorno prima
@@ -397,7 +396,7 @@ if __name__ == "__main__":
 #	yahoo_finance ("PONGF", "atari-600d", "600d")
 #	gaussian_walk(500, "gwalk-05-500", drift = 0.5)
 #	w2 = gaussian_walk(500, "gwalk-2-500", drift = 2)
-#	w03 = gaussian_walk(500, "gwalk-03-500", drift = 0.3)
+	w03 = gaussian_walk(500, "gwalk-03-s9-500", drift = 0.3, sigma = 9.)
 #	gaussian_walk(500, "gwalk-01-500", drift = 0.1)
 #	w001 = gaussian_walk(500, "gwalk-001-500", drift = 0.01)
 

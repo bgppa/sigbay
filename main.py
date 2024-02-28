@@ -28,7 +28,7 @@ IGNORE = 0
 GIVENAVG = 0	# True if the average path is provided (gbm/stoch proc case)
 DEBUG = 0
 RESCALER = 2.
-HYPARAMSEARCH = 1
+HYPARAMSEARCH = 0
 
 sig_depth = 3
 
@@ -264,6 +264,8 @@ for nth in range(n_pred):
 	train_spread[nth] = delta * 100. / pred_train[nth]
 mean_train_spread = torch.mean(train_spread)
 print(f"Mean train SPREAD: {mean_train_spread:.2f}%")
+train_std = torch.mean(train_uncertainty).item()
+print(f"Mean train PURE STD: {train_std : .2f}")
 
 
 train_acc = 0.
@@ -302,6 +304,8 @@ for nth in range(n_pred):
 	val_spread[nth] = delta * 100. / pred_val[nth]
 mean_val_spread = torch.mean(val_spread)
 print(f"Mean val SPREAD: {mean_val_spread:.2f}%")
+val_std = torch.mean(val_uncertainty).item()
+print(f"Mean val PURE STD: {val_std : .2f}")
 
 
 val_acc = 0.
@@ -327,6 +331,38 @@ next_pt = torch.exp(raw_next / final_rescaler) * last_chunk[0]
 up_pt = torch.exp((raw_next+1.96*uncertainty_next) /final_rescaler)*last_chunk[0]
 dw_pt = torch.exp((raw_next-1.96*uncertainty_next) /final_rescaler)*last_chunk[0]
 
+
+#############################################################################
+####    Rudimental part on DRIFT DETECTION
+#############################################################################
+
+tmp_train = pred_train[1:].reshape(-1)
+tmp_truetrain = y_vanilla_train[:-1].reshape(-1)
+train_drifts = tmp_train - tmp_truetrain
+mean_drift_train = torch.mean(train_drifts)
+plt.hist(train_drifts)
+
+tmp_val = pred_val[1:].reshape(-1)
+tmp_trueval = y_vanilla_val[:-1].reshape(-1)
+validation_drifts = tmp_val - tmp_trueval
+mean_drift_val = torch.mean(validation_drifts)
+plt.hist(validation_drifts)
+plt.title(f"Empirical drift (pred val - true val): train \
+{mean_drift_train:.3f} val {mean_drift_val:.3f}")
+
+
+if HYPARAMSEARCH == 0:
+	plt.show()
+
+
+######################################################################
+##	Rudimental part on standard deviation detection
+######################################################################
+if HYPARAMSEARCH == 0:
+	plt.title(f"Empirical uncertainty")
+	plt.hist(train_uncertainty)
+	plt.hist(val_uncertainty)
+	plt.show()
 
 ##############################################################################
 ##	Plot all the results together
@@ -368,8 +404,10 @@ plt.scatter(len(time_series),next_pt, color = "blue", marker = "o")
 plt.scatter(len(time_series),up_pt, color = "blue", marker = "_")
 plt.scatter(len(time_series),dw_pt, color = "blue", marker = "_")
 
-x_label = f"Train: ACC {train_acc:.2f}% SPRD {mean_train_spread:.2f}% | "
-x_label = x_label + f"Val: ACC {val_acc:.2f}% SPRD {mean_val_spread:.2f}%"
+x_label = f"Train: ACC {train_acc:.2f}% SPRD {mean_train_spread:.2f}% "
+x_label = x_label + f"[STD {train_std : .2f} DRFT {mean_drift_train:.3f}]| "
+x_label = x_label + f"Val: ACC {val_acc:.2f}% SPRD {mean_val_spread:.2f}% "
+x_label = x_label + f"[STD {val_std : .2f} DRFT {mean_drift_val:.3f}]"
 plt.xlabel(x_label)
 
 plt.axvline(x=window+len_train+2*offset, color="grey", linestyle="dashed")
@@ -394,3 +432,6 @@ if HYPARAMSEARCH == 1:
 	f.write("\n")
 	f.close()
 #####
+
+
+
