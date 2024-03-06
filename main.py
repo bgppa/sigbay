@@ -20,6 +20,8 @@ from lib_local_predict import predict_from, reliability_analysis
 from libtsm import augment, get_1var
 from libsig import truncation_err, plot_signature, my_signature
 from libmdl import linear_training, diagonal_test
+from libtrd import simple_trading, idle_trading, averaged_trading
+
 torch.manual_seed(0)
 
 TESTDATA = False # if True, discard part of the final series to use as test
